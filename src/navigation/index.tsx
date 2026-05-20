@@ -1,7 +1,8 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Text, StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors, typography } from '../theme';
 
 import HomeScreen from '../screens/HomeScreen';
@@ -12,44 +13,50 @@ import ProfileScreen from '../screens/ProfileScreen';
 
 const Tab = createBottomTabNavigator();
 
-const tabs = [
-  { name: 'Home',       label: 'Início',      icon: '🏠', component: HomeScreen },
-  { name: 'Activities', label: 'Atividades',   icon: '🎯', component: ActivitiesScreen },
-  { name: 'Records',    label: 'Registros',    icon: '📝', component: RecordsScreen },
-  { name: 'Progress',   label: 'Progresso',    icon: '📊', component: ProgressScreen },
-  { name: 'Profile',    label: 'Perfil',       icon: '👤', component: ProfileScreen },
-];
+type IconName = keyof typeof Ionicons.glyphMap;
 
-function TabIcon({ icon, focused }: { icon: string; focused: boolean }) {
-  return (
-    <View style={styles.iconWrap}>
-      <Text style={styles.icon}>{icon}</Text>
-      {focused && <View style={styles.dot} />}
-    </View>
-  );
-}
+const tabs: {
+  name: string;
+  label: string;
+  icon: IconName;
+  iconActive: IconName;
+  component: React.ComponentType;
+}[] = [
+  { name: 'Home',       label: 'Início',    icon: 'home-outline',         iconActive: 'home',         component: HomeScreen },
+  { name: 'Activities', label: 'Atividades', icon: 'rocket-outline',      iconActive: 'rocket',       component: ActivitiesScreen },
+  { name: 'Records',    label: 'Registros', icon: 'clipboard-outline',    iconActive: 'clipboard',    component: RecordsScreen },
+  { name: 'Progress',   label: 'Progresso', icon: 'trending-up-outline',  iconActive: 'trending-up',  component: ProgressScreen },
+  { name: 'Profile',    label: 'Perfil',    icon: 'person-circle-outline', iconActive: 'person-circle', component: ProfileScreen },
+];
 
 export default function Navigation() {
   return (
     <NavigationContainer>
       <Tab.Navigator
-        screenOptions={{
+        screenOptions={({ route }) => ({
           headerShown: false,
           tabBarStyle: styles.tabBar,
           tabBarActiveTintColor: colors.primary,
           tabBarInactiveTintColor: colors.text3,
           tabBarLabelStyle: styles.tabLabel,
-        }}
+          tabBarIcon: ({ focused, color, size }) => {
+            const tab = tabs.find(t => t.name === route.name)!;
+            return (
+              <Ionicons
+                name={focused ? tab.iconActive : tab.icon}
+                size={size}
+                color={color}
+              />
+            );
+          },
+        })}
       >
         {tabs.map(tab => (
           <Tab.Screen
             key={tab.name}
             name={tab.name}
             component={tab.component}
-            options={{
-              tabBarLabel: tab.label,
-              tabBarIcon: ({ focused }) => <TabIcon icon={tab.icon} focused={focused} />,
-            }}
+            options={{ tabBarLabel: tab.label }}
           />
         ))}
       </Tab.Navigator>
@@ -68,16 +75,10 @@ const styles = StyleSheet.create({
     elevation: 8,
     height: 64,
     paddingBottom: 8,
-    paddingTop: 8,
+    paddingTop: 4,
   },
-  tabLabel: { ...typography.label, marginTop: 2 },
-  iconWrap: { alignItems: 'center' },
-  icon: { fontSize: 22 },
-  dot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.primary,
-    marginTop: 2,
+  tabLabel: {
+    ...typography.label,
+    marginTop: 0,
   },
 });

@@ -2,15 +2,16 @@ import React from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity, SafeAreaView,
 } from 'react-native';
-import { colors, spacing, typography, radius } from '../theme';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, spacing, typography, radius, shadows } from '../theme';
 import Card from '../components/Card';
 import ProgressBar from '../components/ProgressBar';
 import { baby, activities, developmentAreas } from '../data/mockData';
 
 const quickActions = [
-  { icon: '😴', label: 'Sono' },
-  { icon: '🍼', label: 'Mama' },
-  { icon: '📏', label: 'Cresceu' },
+  { icon: 'moon-outline' as const, label: 'Sono', color: colors.purple },
+  { icon: 'nutrition-outline' as const, label: 'Mamou', color: colors.green },
+  { icon: 'resize-outline' as const, label: 'Cresceu', color: colors.orange },
 ];
 
 export default function HomeScreen() {
@@ -19,30 +20,29 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>Olá! 👋</Text>
             <Text style={styles.subtitle}>Bebê: {baby.name} • {baby.age}</Text>
           </View>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {baby.name.charAt(0)}
-            </Text>
-          </View>
+          <TouchableOpacity style={styles.avatar}>
+            <Text style={styles.avatarText}>{baby.name.charAt(0)}</Text>
+          </TouchableOpacity>
         </View>
 
         <Card style={styles.planCard}>
           <View style={styles.planRow}>
-            <Text style={styles.planIcon}>🌟</Text>
+            <View style={[styles.planIconWrap, { backgroundColor: colors.orangeLight }]}>
+              <Ionicons name="sunny-outline" size={24} color={colors.orange} />
+            </View>
             <View style={styles.planInfo}>
               <Text style={styles.planTitle}>Plano de hoje</Text>
               <Text style={styles.planSub}>
-                {activities.length} atividades • {doneCount} conquistada{doneCount !== 1 ? 's' : ''} ✓
+                {activities.length} atividades • {doneCount} feita{doneCount !== 1 ? 's' : ''} ✓
               </Text>
             </View>
-            <TouchableOpacity>
-              <Text style={styles.planLink}>Ver tudo →</Text>
-            </TouchableOpacity>
+            <Ionicons name="chevron-forward" size={20} color={colors.text3} />
           </View>
         </Card>
 
@@ -50,7 +50,9 @@ export default function HomeScreen() {
         <View style={styles.quickRow}>
           {quickActions.map(action => (
             <TouchableOpacity key={action.label} style={styles.quickBtn}>
-              <Text style={styles.quickIcon}>{action.icon}</Text>
+              <View style={[styles.quickIconWrap, { backgroundColor: action.color + '20' }]}>
+                <Ionicons name={action.icon} size={26} color={action.color} />
+              </View>
               <Text style={styles.quickLabel}>{action.label}</Text>
             </TouchableOpacity>
           ))}
@@ -70,8 +72,10 @@ export default function HomeScreen() {
         </Card>
 
         <Card style={styles.tipCard}>
-          <Text style={styles.tipIcon}>💡</Text>
-          <Text style={styles.tipTitle}>Dica da semana</Text>
+          <View style={styles.tipHeader}>
+            <Ionicons name="bulb-outline" size={20} color={colors.orange} />
+            <Text style={styles.tipTitle}>Dica da semana</Text>
+          </View>
           <Text style={styles.tipText}>
             Fale o nome dos objetos ao redor para estimular a linguagem do bebê.
           </Text>
@@ -103,14 +107,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   avatarText: { ...typography.h3, color: colors.primary },
-  planCard: { marginBottom: spacing.lg, flexDirection: 'row' },
-  planRow: { flexDirection: 'row', alignItems: 'center', flex: 1 },
-  planIcon: { fontSize: 28, marginRight: spacing.sm },
+  planCard: { marginBottom: spacing.lg },
+  planRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  planIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   planInfo: { flex: 1 },
   planTitle: { ...typography.bodyMedium, color: colors.text1 },
   planSub: { ...typography.caption, color: colors.text3, marginTop: 2 },
-  planLink: { ...typography.caption, color: colors.primary, fontWeight: '600' },
-  sectionTitle: { ...typography.h3, color: colors.text1, marginBottom: spacing.sm, marginTop: spacing.sm },
+  sectionTitle: { ...typography.h3, color: colors.text1, marginBottom: spacing.sm, marginTop: spacing.xs },
   quickRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
   quickBtn: {
     flex: 1,
@@ -118,14 +127,17 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     paddingVertical: spacing.md,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
+    gap: spacing.xs,
+    ...shadows.card,
   },
-  quickIcon: { fontSize: 28 },
-  quickLabel: { ...typography.label, color: colors.text3, marginTop: spacing.xs },
+  quickIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  quickLabel: { ...typography.label, color: colors.text3 },
   progressRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -134,9 +146,9 @@ const styles = StyleSheet.create({
   },
   progressRowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
   progressLabel: { ...typography.caption, color: colors.text2, width: 72 },
-  progressPct: { ...typography.label, width: 32, textAlign: 'right', fontWeight: '700' },
+  progressPct: { ...typography.label, width: 32, textAlign: 'right', fontFamily: 'Nunito_700Bold' },
   tipCard: { marginTop: spacing.md },
-  tipIcon: { fontSize: 22, marginBottom: spacing.xs },
-  tipTitle: { ...typography.bodyMedium, color: colors.text1, marginBottom: spacing.xs },
+  tipHeader: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs, marginBottom: spacing.sm },
+  tipTitle: { ...typography.bodyMedium, color: colors.text1 },
   tipText: { ...typography.body, color: colors.text3 },
 });
