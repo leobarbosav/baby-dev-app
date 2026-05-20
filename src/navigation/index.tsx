@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors, typography } from '../theme';
 
 import HomeScreen from '../screens/HomeScreen';
@@ -11,8 +12,11 @@ import RecordsScreen from '../screens/RecordsScreen';
 import ProgressScreen from '../screens/ProgressScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
-const Tab = createBottomTabNavigator();
+import WelcomeScreen from '../screens/onboarding/WelcomeScreen';
+import BabyInfoScreen from '../screens/onboarding/BabyInfoScreen';
+import AllSetScreen from '../screens/onboarding/AllSetScreen';
 
+const Tab = createBottomTabNavigator();
 type IconName = keyof typeof Ionicons.glyphMap;
 
 const tabs: {
@@ -22,14 +26,76 @@ const tabs: {
   iconActive: IconName;
   component: React.ComponentType;
 }[] = [
-  { name: 'Home',       label: 'Início',    icon: 'home-outline',         iconActive: 'home',         component: HomeScreen },
-  { name: 'Activities', label: 'Atividades', icon: 'rocket-outline',      iconActive: 'rocket',       component: ActivitiesScreen },
-  { name: 'Records',    label: 'Registros', icon: 'clipboard-outline',    iconActive: 'clipboard',    component: RecordsScreen },
-  { name: 'Progress',   label: 'Progresso', icon: 'trending-up-outline',  iconActive: 'trending-up',  component: ProgressScreen },
-  { name: 'Profile',    label: 'Perfil',    icon: 'person-circle-outline', iconActive: 'person-circle', component: ProfileScreen },
+  { name: 'Home',       label: 'Início',     icon: 'home-outline',          iconActive: 'home',          component: HomeScreen },
+  { name: 'Activities', label: 'Atividades', icon: 'rocket-outline',        iconActive: 'rocket',        component: ActivitiesScreen },
+  { name: 'Records',    label: 'Registros',  icon: 'clipboard-outline',     iconActive: 'clipboard',     component: RecordsScreen },
+  { name: 'Progress',   label: 'Progresso',  icon: 'trending-up-outline',   iconActive: 'trending-up',   component: ProgressScreen },
+  { name: 'Profile',    label: 'Perfil',     icon: 'person-circle-outline', iconActive: 'person-circle', component: ProfileScreen },
 ];
 
+type OnboardingStep = 'loading' | 'welcome' | 'babyInfo' | 'allSet' | 'done';
+
 export default function Navigation() {
+  const [step, setStep] = useState<OnboardingStep>('loading');
+  const [babyName,  setBabyName]  = useState('');
+  const [babyMonth, setBabyMonth] = useState(0);
+  const [babyYear,  setBabyYear]  = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    AsyncStorage.getItem('onboardingDone').then(val => {
+      setStep(val === 'true' ? 'done' : 'welcome');
+    });
+  }, []);
+
+  const handleBabyInfo = (name: string, month: number, year: number) => {
+    setBabyName(name);
+    setBabyMonth(month);
+    setBabyYear(year);
+    setStep('allSet');
+  };
+
+  const handleFinish = async () => {
+    await AsyncStorage.multiSet([
+      ['onboardingDone', 'true'],
+      ['babyName',  babyName],
+      ['babyMonth', String(babyMonth)],
+      ['babyYear',  String(babyYear)],
+    ]);
+    setStep('done');
+  };
+
+  if (step === 'loading') {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator color={colors.primary} size="large" />
+      </View>
+    );
+  }
+
+  if (step === 'welcome') {
+    return <WelcomeScreen onNext={() => setStep('babyInfo')} />;
+  }
+
+  if (step === 'babyInfo') {
+    return (
+      <BabyInfoScreen
+        onNext={handleBabyInfo}
+        onBack={() => setStep('welcome')}
+      />
+    );
+  }
+
+  if (step === 'allSet') {
+    return (
+      <AllSetScreen
+        name={babyName}
+        month={babyMonth}
+        year={babyYear}
+        onFinish={handleFinish}
+      />
+    );
+  }
+
   return (
     <NavigationContainer>
       <Tab.Navigator
@@ -65,6 +131,7 @@ export default function Navigation() {
 }
 
 const styles = StyleSheet.create({
+  loader: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background },
   tabBar: {
     backgroundColor: colors.white,
     borderTopWidth: 0,
