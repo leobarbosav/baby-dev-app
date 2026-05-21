@@ -10,6 +10,7 @@ import HomeScreen from '../screens/HomeScreen';
 import ActivitiesScreen from '../screens/ActivitiesScreen';
 import RecordsScreen from '../screens/RecordsScreen';
 import ProgressScreen from '../screens/ProgressScreen';
+import VacinasScreen from '../screens/VacinasScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
 import WelcomeScreen from '../screens/onboarding/WelcomeScreen';
@@ -30,6 +31,7 @@ const tabs: {
   { name: 'Activities', label: 'Atividades', icon: 'rocket-outline',        iconActive: 'rocket',        component: ActivitiesScreen },
   { name: 'Records',    label: 'Registros',  icon: 'clipboard-outline',     iconActive: 'clipboard',     component: RecordsScreen },
   { name: 'Progress',   label: 'Progresso',  icon: 'trending-up-outline',   iconActive: 'trending-up',   component: ProgressScreen },
+  { name: 'Vacinas',    label: 'Vacinas',    icon: 'medical-outline',       iconActive: 'medical',       component: VacinasScreen },
   { name: 'Profile',    label: 'Perfil',     icon: 'person-circle-outline', iconActive: 'person-circle', component: ProfileScreen },
 ];
 

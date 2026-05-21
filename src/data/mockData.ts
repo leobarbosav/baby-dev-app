@@ -2,6 +2,7 @@ export const baby = {
   name: 'Sofia',
   age: '8 meses',
   birthDate: '15/09/2025',
+  birthDateObj: new Date('2025-09-15'),
   photo: null,
 };
 
