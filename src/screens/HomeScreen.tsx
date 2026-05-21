@@ -1,23 +1,51 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity, SafeAreaView,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, radius, shadows } from '../theme';
 import Card from '../components/Card';
 import ProgressBar from '../components/ProgressBar';
-import { activities, developmentAreas } from '../data/mockData';
+import SleepModal from '../components/SleepModal';
+import FeedingModal from '../components/FeedingModal';
+import GrowthModal from '../components/GrowthModal';
+import { getActivitiesForMonth } from '../data/activitiesData';
+import { getDevelopmentAreas } from '../data/milestonesData';
+import { getActivitiesDone, todayStr } from '../utils/storage';
 import { useBaby } from '../context/BabyContext';
 
-const quickActions = [
-  { icon: 'moon-outline' as const, label: 'Sono', color: colors.purple },
-  { icon: 'nutrition-outline' as const, label: 'Mamou', color: colors.green },
-  { icon: 'resize-outline' as const, label: 'Cresceu', color: colors.orange },
-];
+function ageInMonths(birthDateObj: Date): number {
+  const now = new Date();
+  let months =
+    (now.getFullYear() - birthDateObj.getFullYear()) * 12 +
+    (now.getMonth() - birthDateObj.getMonth());
+  if (now.getDate() < birthDateObj.getDate()) months -= 1;
+  return Math.max(0, Math.min(months, 24));
+}
 
 export default function HomeScreen() {
   const baby = useBaby();
-  const doneCount = activities.filter(a => a.done).length;
+  const navigation = useNavigation<any>();
+  const ageMonths = ageInMonths(baby.birthDateObj);
+  const activities = getActivitiesForMonth(ageMonths);
+  const developmentAreas = getDevelopmentAreas(ageMonths);
+  const [doneCount, setDoneCount] = useState(0);
+  const [showSleepModal, setShowSleepModal] = useState(false);
+  const [showFeedingModal, setShowFeedingModal] = useState(false);
+  const [showGrowthModal, setShowGrowthModal] = useState(false);
+
+  useEffect(() => {
+    getActivitiesDone(todayStr()).then(doneMap => {
+      setDoneCount(activities.filter(a => doneMap[a.id]).length);
+    });
+  }, [ageMonths]);
+
+  const quickActions = [
+    { icon: 'moon-outline' as const, label: 'Sono', color: colors.purple, onPress: () => setShowSleepModal(true) },
+    { icon: 'nutrition-outline' as const, label: 'Mamou', color: colors.green, onPress: () => setShowFeedingModal(true) },
+    { icon: 'resize-outline' as const, label: 'Cresceu', color: colors.orange, onPress: () => setShowGrowthModal(true) },
+  ];
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -33,6 +61,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
+        <TouchableOpacity activeOpacity={0.7} onPress={() => navigation.navigate('Activities')}>
         <Card style={styles.planCard}>
           <View style={styles.planRow}>
             <View style={[styles.planIconWrap, { backgroundColor: colors.orangeLight }]}>
@@ -47,11 +76,12 @@ export default function HomeScreen() {
             <Ionicons name="chevron-forward" size={20} color={colors.text3} />
           </View>
         </Card>
+        </TouchableOpacity>
 
         <Text style={styles.sectionTitle}>Registros rápidos</Text>
         <View style={styles.quickRow}>
           {quickActions.map(action => (
-            <TouchableOpacity key={action.label} style={styles.quickBtn}>
+            <TouchableOpacity key={action.label} style={styles.quickBtn} onPress={action.onPress}>
               <View style={[styles.quickIconWrap, { backgroundColor: action.color + '20' }]}>
                 <Ionicons name={action.icon} size={26} color={action.color} />
               </View>
@@ -60,7 +90,12 @@ export default function HomeScreen() {
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Progresso de {baby.name}</Text>
+        <View style={styles.sectionRow}>
+          <Text style={styles.sectionTitle}>Progresso de {baby.name}</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Progress')}>
+            <Text style={styles.seeAll}>Ver tudo</Text>
+          </TouchableOpacity>
+        </View>
         <Card>
           {developmentAreas.map((area, i) => (
             <View key={area.key} style={[styles.progressRow, i < developmentAreas.length - 1 && styles.progressRowBorder]}>
@@ -85,6 +120,22 @@ export default function HomeScreen() {
 
         <View style={{ height: spacing.xl }} />
       </ScrollView>
+
+      <SleepModal
+        visible={showSleepModal}
+        onClose={() => setShowSleepModal(false)}
+        onSaved={() => {}}
+      />
+      <FeedingModal
+        visible={showFeedingModal}
+        onClose={() => setShowFeedingModal(false)}
+        onSaved={() => {}}
+      />
+      <GrowthModal
+        visible={showGrowthModal}
+        onClose={() => setShowGrowthModal(false)}
+        onSaved={() => {}}
+      />
     </SafeAreaView>
   );
 }
@@ -121,7 +172,9 @@ const styles = StyleSheet.create({
   planInfo: { flex: 1 },
   planTitle: { ...typography.bodyMedium, color: colors.text1 },
   planSub: { ...typography.caption, color: colors.text3, marginTop: 2 },
-  sectionTitle: { ...typography.h3, color: colors.text1, marginBottom: spacing.sm, marginTop: spacing.xs },
+  sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm, marginTop: spacing.xs },
+  sectionTitle: { ...typography.h3, color: colors.text1 },
+  seeAll: { ...typography.caption, color: colors.primary, fontFamily: 'Inter_600SemiBold' },
   quickRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
   quickBtn: {
     flex: 1,

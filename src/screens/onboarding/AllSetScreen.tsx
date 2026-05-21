@@ -25,6 +25,7 @@ function calcAge(month: number, year: number): string {
 
 type Props = {
   name: string;
+  day: number;
   month: number;
   year: number;
   onFinish: () => void;
@@ -36,7 +37,7 @@ const highlights = [
   { icon: 'heart-outline' as const,    text: 'Registros de sono e alimentação' },
 ];
 
-export default function AllSetScreen({ name, month, year, onFinish }: Props) {
+export default function AllSetScreen({ name, day, month, year, onFinish }: Props) {
   const age = calcAge(month, year);
 
   return (
@@ -57,7 +58,7 @@ export default function AllSetScreen({ name, month, year, onFinish }: Props) {
           <View style={styles.babyPill}>
             <Ionicons name="person-circle-outline" size={18} color={colors.primary} />
             <Text style={styles.babyPillText}>
-              {name} • {age} • nasceu em {MONTHS[month]} de {year}
+              {name} • {age} • nasceu em {day} de {MONTHS[month]} de {year}
             </Text>
           </View>
         </View>

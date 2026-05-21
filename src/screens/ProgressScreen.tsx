@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import {
   View, Text, ScrollView, StyleSheet, TouchableOpacity, SafeAreaView,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, radius } from '../theme';
 import Card from '../components/Card';
 import ProgressBar from '../components/ProgressBar';
-import { developmentAreas } from '../data/mockData';
+import { getDevelopmentAreas } from '../data/milestonesData';
 import { useBaby } from '../context/BabyContext';
 
 const areaIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
@@ -16,8 +17,19 @@ const areaIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
   language:  'chatbubble-outline',
 };
 
+function ageInMonths(birthDateObj: Date): number {
+  const now = new Date();
+  let months =
+    (now.getFullYear() - birthDateObj.getFullYear()) * 12 +
+    (now.getMonth() - birthDateObj.getMonth());
+  if (now.getDate() < birthDateObj.getDate()) months -= 1;
+  return Math.max(0, Math.min(months, 24));
+}
+
 export default function ProgressScreen() {
   const baby = useBaby();
+  const navigation = useNavigation<any>();
+  const developmentAreas = getDevelopmentAreas(ageInMonths(baby.birthDateObj));
   const [selectedArea, setSelectedArea] = useState(developmentAreas[0].key);
   const area = developmentAreas.find(a => a.key === selectedArea)!;
 
@@ -92,7 +104,10 @@ export default function ProgressScreen() {
                   <Text style={styles.progressCardMeta}>Esperado: {item.expected}</Text>
                 </View>
               </View>
-              <TouchableOpacity style={[styles.actBtn, { borderColor: area.color }]}>
+              <TouchableOpacity
+                style={[styles.actBtn, { borderColor: area.color }]}
+                onPress={() => navigation.navigate('Activities')}
+              >
                 <Text style={[styles.actBtnText, { color: area.color }]}>Ver atividades</Text>
                 <Ionicons name="arrow-forward" size={12} color={area.color} />
               </TouchableOpacity>
@@ -100,7 +115,10 @@ export default function ProgressScreen() {
           </Card>
         ))}
 
-        <TouchableOpacity style={[styles.reportBtn, { backgroundColor: area.color }]}>
+        <TouchableOpacity
+          style={[styles.reportBtn, { backgroundColor: area.color }]}
+          onPress={() => navigation.navigate('Records')}
+        >
           <Ionicons name="bar-chart-outline" size={18} color={colors.white} />
           <Text style={styles.reportBtnText}>Ver relatório completo</Text>
         </TouchableOpacity>

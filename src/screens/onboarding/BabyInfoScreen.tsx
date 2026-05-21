@@ -15,16 +15,18 @@ const currentYear = new Date().getFullYear();
 const YEARS = Array.from({ length: 4 }, (_, i) => currentYear - i);
 
 type Props = {
-  onNext: (name: string, month: number, year: number) => void;
+  onNext: (name: string, day: number, month: number, year: number) => void;
   onBack: () => void;
 };
 
 export default function BabyInfoScreen({ onNext, onBack }: Props) {
-  const [name, setName] = useState('');
+  const [name,  setName]  = useState('');
+  const [day,   setDay]   = useState('');
   const [month, setMonth] = useState(new Date().getMonth());
-  const [year, setYear]   = useState(currentYear);
+  const [year,  setYear]  = useState(currentYear);
 
-  const canContinue = name.trim().length >= 2;
+  const dayNum = parseInt(day, 10);
+  const canContinue = name.trim().length >= 2 && dayNum >= 1 && dayNum <= 31;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -62,7 +64,19 @@ export default function BabyInfoScreen({ onNext, onBack }: Props) {
             value={name}
             onChangeText={setName}
             autoCapitalize="words"
+            returnKeyType="next"
+          />
+
+          <Text style={styles.label}>Dia de nascimento</Text>
+          <TextInput
+            style={[styles.input, styles.inputSmall]}
+            placeholder="Ex: 15"
+            placeholderTextColor={colors.text3}
+            value={day}
+            onChangeText={v => setDay(v.replace(/\D/g, '').slice(0, 2))}
+            keyboardType="number-pad"
             returnKeyType="done"
+            maxLength={2}
           />
 
           <Text style={styles.label}>Mês de nascimento</Text>
@@ -93,7 +107,7 @@ export default function BabyInfoScreen({ onNext, onBack }: Props) {
 
           <TouchableOpacity
             style={[styles.btn, !canContinue && styles.btnDisabled]}
-            onPress={() => canContinue && onNext(name.trim(), month, year)}
+            onPress={() => canContinue && onNext(name.trim(), dayNum, month, year)}
             activeOpacity={canContinue ? 0.8 : 1}
           >
             <Text style={styles.btnText}>Próximo</Text>
@@ -115,60 +129,42 @@ const styles = StyleSheet.create({
   dotActive: { width: 24, backgroundColor: colors.primary },
   dotDone: { backgroundColor: colors.primary },
   iconWrap: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 72, height: 72, borderRadius: 36,
     backgroundColor: colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center',
     marginBottom: spacing.md,
   },
   title: { ...typography.h2, color: colors.text1, marginBottom: spacing.xs },
   subtitle: { ...typography.body, color: colors.text3, marginBottom: spacing.xl },
   label: { ...typography.label, color: colors.text3, marginBottom: spacing.sm, letterSpacing: 0.6 },
   input: {
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    borderWidth: 1.5, borderColor: colors.border,
     borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 14,
-    ...typography.body,
-    color: colors.text1,
-    marginBottom: spacing.lg,
-    backgroundColor: colors.white,
+    paddingHorizontal: spacing.md, paddingVertical: 14,
+    ...typography.body, color: colors.text1,
+    marginBottom: spacing.lg, backgroundColor: colors.white,
   },
+  inputSmall: { width: 100 },
   chipScroll: { marginBottom: spacing.lg },
   chip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.full,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginRight: spacing.sm,
+    paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
+    borderRadius: radius.full, backgroundColor: colors.white,
+    borderWidth: 1, borderColor: colors.border, marginRight: spacing.sm,
   },
   chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   chipText: { ...typography.bodyMedium, color: colors.text2 },
   chipTextActive: { color: colors.white },
   yearRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.xl },
   yearChip: {
-    flex: 1,
-    paddingVertical: spacing.sm,
-    borderRadius: radius.md,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
+    flex: 1, paddingVertical: spacing.sm,
+    borderRadius: radius.md, backgroundColor: colors.white,
+    borderWidth: 1, borderColor: colors.border, alignItems: 'center',
   },
   btn: {
-    flexDirection: 'row',
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    paddingVertical: spacing.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    marginTop: spacing.sm,
+    flexDirection: 'row', backgroundColor: colors.primary,
+    borderRadius: radius.md, paddingVertical: spacing.md,
+    alignItems: 'center', justifyContent: 'center',
+    gap: spacing.sm, marginTop: spacing.sm,
   },
   btnDisabled: { backgroundColor: colors.border },
   btnText: { ...typography.bodySemiBold, color: colors.white, fontSize: 17 },

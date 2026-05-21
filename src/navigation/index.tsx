@@ -41,6 +41,7 @@ type OnboardingStep = 'loading' | 'welcome' | 'babyInfo' | 'allSet' | 'done';
 export default function Navigation() {
   const [step, setStep] = useState<OnboardingStep>('loading');
   const [babyName,  setBabyName]  = useState('');
+  const [babyDay,   setBabyDay]   = useState(1);
   const [babyMonth, setBabyMonth] = useState(0);
   const [babyYear,  setBabyYear]  = useState(new Date().getFullYear());
 
@@ -50,8 +51,9 @@ export default function Navigation() {
     });
   }, []);
 
-  const handleBabyInfo = (name: string, month: number, year: number) => {
+  const handleBabyInfo = (name: string, day: number, month: number, year: number) => {
     setBabyName(name);
+    setBabyDay(day);
     setBabyMonth(month);
     setBabyYear(year);
     setStep('allSet');
@@ -61,6 +63,7 @@ export default function Navigation() {
     await AsyncStorage.multiSet([
       ['onboardingDone', 'true'],
       ['babyName',  babyName],
+      ['babyDay',   String(babyDay)],
       ['babyMonth', String(babyMonth)],
       ['babyYear',  String(babyYear)],
     ]);
@@ -92,6 +95,7 @@ export default function Navigation() {
     return (
       <AllSetScreen
         name={babyName}
+        day={babyDay}
         month={babyMonth}
         year={babyYear}
         onFinish={handleFinish}
