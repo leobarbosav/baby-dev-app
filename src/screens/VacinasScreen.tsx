@@ -4,16 +4,30 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, radius } from '../theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import Card from '../components/Card';
 import VacinaCard from '../components/VacinaCard';
-import { baby } from '../data/mockData';
+import { useBaby } from '../context/BabyContext';
 import { calcularCartao, VacinaComStatus } from '../data/vacinasData';
 
+const STORAGE_KEY = 'vacinasAplicadas';
+
 export default function VacinasScreen() {
+  const baby = useBaby();
   const [vacinas, setVacinas] = useState<VacinaComStatus[]>(() =>
     calcularCartao(baby.birthDateObj)
   );
   const [aplicadasVisiveis, setAplicadasVisiveis] = useState(false);
+
+  useEffect(() => {
+    AsyncStorage.getItem(STORAGE_KEY).then(stored => {
+      if (!stored) return;
+      const ids: string[] = JSON.parse(stored);
+      setVacinas(prev =>
+        prev.map(v => ids.includes(v.id) ? { ...v, status: 'aplicada', diasParaData: 0 } : v)
+      );
+    });
+  }, []);
 
   const aplicadas = vacinas.filter(v => v.status === 'aplicada');
   const pendentes  = vacinas.filter(v => v.status === 'pendente').sort((a, b) => a.diasParaData - b.diasParaData);
@@ -21,9 +35,14 @@ export default function VacinasScreen() {
   const proximas30 = pendentes.filter(v => v.diasParaData <= 30);
 
   const handleMarcarAplicada = (id: string) => {
-    setVacinas(prev =>
-      prev.map(v => v.id === id ? { ...v, status: 'aplicada', diasParaData: 0 } : v)
-    );
+    setVacinas(prev => {
+      const next = prev.map(v =>
+        v.id === id ? { ...v, status: 'aplicada' as const, diasParaData: 0 } : v
+      );
+      const ids = next.filter(v => v.status === 'aplicada').map(v => v.id);
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+      return next;
+    });
   };
 
   const handleVerDetalhe = (v: VacinaComStatus) => {

@@ -16,6 +16,7 @@ import ProfileScreen from '../screens/ProfileScreen';
 import WelcomeScreen from '../screens/onboarding/WelcomeScreen';
 import BabyInfoScreen from '../screens/onboarding/BabyInfoScreen';
 import AllSetScreen from '../screens/onboarding/AllSetScreen';
+import { BabyProvider } from '../context/BabyContext';
 
 const Tab = createBottomTabNavigator();
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -99,6 +100,7 @@ export default function Navigation() {
   }
 
   return (
+    <BabyProvider>
     <NavigationContainer>
       <Tab.Navigator
         screenOptions={({ route }) => ({
@@ -129,6 +131,7 @@ export default function Navigation() {
         ))}
       </Tab.Navigator>
     </NavigationContainer>
+    </BabyProvider>
   );
 }
 

@@ -6,7 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, radius, shadows } from '../theme';
 import Card from '../components/Card';
 import ProgressBar from '../components/ProgressBar';
-import { baby, activities, developmentAreas } from '../data/mockData';
+import { activities, developmentAreas } from '../data/mockData';
+import { useBaby } from '../context/BabyContext';
 
 const quickActions = [
   { icon: 'moon-outline' as const, label: 'Sono', color: colors.purple },
@@ -15,6 +16,7 @@ const quickActions = [
 ];
 
 export default function HomeScreen() {
+  const baby = useBaby();
   const doneCount = activities.filter(a => a.done).length;
 
   return (

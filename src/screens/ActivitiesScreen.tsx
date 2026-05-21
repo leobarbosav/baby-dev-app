@@ -7,6 +7,7 @@ import { colors, spacing, typography, radius } from '../theme';
 import Card from '../components/Card';
 import Badge from '../components/Badge';
 import { activities } from '../data/mockData';
+import { useBaby } from '../context/BabyContext';
 
 const areaColors: Record<string, { color: string; bg: string }> = {
   motor:     { color: colors.motor,     bg: colors.motorLight },
@@ -31,6 +32,7 @@ function Stars({ count }: { count: number }) {
 }
 
 export default function ActivitiesScreen() {
+  const baby = useBaby();
   const [items, setItems] = useState(activities);
   const done = items.filter(a => a.done);
   const pending = items.filter(a => !a.done);
@@ -48,7 +50,7 @@ export default function ActivitiesScreen() {
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.title}>Atividades de Hoje</Text>
-          <Text style={styles.date}>20 Mai • Sofia 8m</Text>
+          <Text style={styles.date}>20 Mai • {baby.name} {baby.age}</Text>
         </View>
 
         {done.length > 0 && (

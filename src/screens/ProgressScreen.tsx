@@ -6,7 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, radius } from '../theme';
 import Card from '../components/Card';
 import ProgressBar from '../components/ProgressBar';
-import { developmentAreas, baby } from '../data/mockData';
+import { developmentAreas } from '../data/mockData';
+import { useBaby } from '../context/BabyContext';
 
 const areaIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
   motor:     'body-outline',
@@ -16,6 +17,7 @@ const areaIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
 };
 
 export default function ProgressScreen() {
+  const baby = useBaby();
   const [selectedArea, setSelectedArea] = useState(developmentAreas[0].key);
   const area = developmentAreas.find(a => a.key === selectedArea)!;
 

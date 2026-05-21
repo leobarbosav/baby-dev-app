@@ -5,7 +5,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, radius } from '../theme';
 import Card from '../components/Card';
-import { baby } from '../data/mockData';
+import { useBaby } from '../context/BabyContext';
 
 const menuItems = [
   { icon: 'person-outline' as const,       label: 'Dados do bebê',    sub: 'Nome, data de nascimento, foto' },
@@ -22,6 +22,7 @@ const stats = [
 ];
 
 export default function ProfileScreen() {
+  const baby = useBaby();
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
