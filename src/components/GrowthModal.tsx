@@ -6,6 +6,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, radius, shadows } from '../theme';
 import { GrowthRecord, addGrowthRecord, todayStr } from '../utils/storage';
+import { pushGrowthRecord } from '../lib/sync';
 
 interface Props {
   visible: boolean;
@@ -27,6 +28,7 @@ export default function GrowthModal({ visible, onClose, onSaved }: Props) {
       height: height.trim() ? parseFloat(height.replace(',', '.')) : undefined,
     };
     await addGrowthRecord(record);
+    pushGrowthRecord(record).catch(() => {});
     onSaved(record);
     setWeight('');
     setHeight('');

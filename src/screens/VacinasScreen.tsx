@@ -5,6 +5,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, radius } from '../theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { syncVacinas } from '../lib/sync';
 import Card from '../components/Card';
 import VacinaCard from '../components/VacinaCard';
 import { useBaby } from '../context/BabyContext';
@@ -41,6 +42,7 @@ export default function VacinasScreen() {
       );
       const ids = next.filter(v => v.status === 'aplicada').map(v => v.id);
       AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+      syncVacinas(ids).catch(() => {});
       return next;
     });
   };

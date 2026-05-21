@@ -9,7 +9,9 @@ import { colors, spacing, typography, radius } from '../theme';
 import Card from '../components/Card';
 import GrowthModal from '../components/GrowthModal';
 import { useBaby, useBabyUpdate } from '../context/BabyContext';
+import { useAuth } from '../context/AuthContext';
 import { getGrowthRecords, GrowthRecord } from '../utils/storage';
+import { syncBabyProfile } from '../lib/sync';
 
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
@@ -32,6 +34,7 @@ function dateLabel(isoDate: string): string {
 export default function ProfileScreen() {
   const baby = useBaby();
   const updateBaby = useBabyUpdate();
+  const { signOut } = useAuth();
 
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState('');
@@ -68,6 +71,7 @@ export default function ProfileScreen() {
       return;
     }
     await updateBaby(name, day, month - 1, year);
+    syncBabyProfile(name, day, month - 1, year).catch(() => {});
     setEditing(false);
   }
 
@@ -230,7 +234,15 @@ export default function ProfileScreen() {
           ))}
         </Card>
 
-        <TouchableOpacity style={styles.logoutBtn}>
+        <TouchableOpacity
+          style={styles.logoutBtn}
+          onPress={() =>
+            Alert.alert('Sair da conta', 'Tem certeza?', [
+              { text: 'Cancelar', style: 'cancel' },
+              { text: 'Sair', style: 'destructive', onPress: signOut },
+            ])
+          }
+        >
           <Ionicons name="log-out-outline" size={18} color={colors.error} />
           <Text style={styles.logoutText}>Sair da conta</Text>
         </TouchableOpacity>

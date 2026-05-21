@@ -12,11 +12,14 @@ import RecordsScreen from '../screens/RecordsScreen';
 import ProgressScreen from '../screens/ProgressScreen';
 import VacinasScreen from '../screens/VacinasScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import AuthScreen from '../screens/AuthScreen';
 
 import WelcomeScreen from '../screens/onboarding/WelcomeScreen';
 import BabyInfoScreen from '../screens/onboarding/BabyInfoScreen';
 import AllSetScreen from '../screens/onboarding/AllSetScreen';
 import { BabyProvider } from '../context/BabyContext';
+import { AuthProvider, useAuth } from '../context/AuthContext';
+import { pullBabyProfile, pullAllData, syncBabyProfile } from '../lib/sync';
 
 const Tab = createBottomTabNavigator();
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -38,7 +41,8 @@ const tabs: {
 
 type OnboardingStep = 'loading' | 'welcome' | 'babyInfo' | 'allSet' | 'done';
 
-export default function Navigation() {
+function AppNavigator() {
+  const { session, loading: authLoading } = useAuth();
   const [step, setStep] = useState<OnboardingStep>('loading');
   const [babyName,  setBabyName]  = useState('');
   const [babyDay,   setBabyDay]   = useState(1);
@@ -46,10 +50,22 @@ export default function Navigation() {
   const [babyYear,  setBabyYear]  = useState(new Date().getFullYear());
 
   useEffect(() => {
-    AsyncStorage.getItem('onboardingDone').then(val => {
+    if (authLoading) return;
+    if (!session) { setStep('done'); return; }
+    async function init() {
+      // Tenta puxar perfil do Supabase (usuário já existente em outro dispositivo)
+      const hadProfile = await pullBabyProfile();
+      if (hadProfile) {
+        await pullAllData();
+        setStep('done');
+        return;
+      }
+      // Sem perfil remoto — verifica onboarding local
+      const val = await AsyncStorage.getItem('onboardingDone');
       setStep(val === 'true' ? 'done' : 'welcome');
-    });
-  }, []);
+    }
+    init();
+  }, [session, authLoading]);
 
   const handleBabyInfo = (name: string, day: number, month: number, year: number) => {
     setBabyName(name);
@@ -67,15 +83,20 @@ export default function Navigation() {
       ['babyMonth', String(babyMonth)],
       ['babyYear',  String(babyYear)],
     ]);
+    syncBabyProfile(babyName, babyDay, babyMonth, babyYear).catch(() => {});
     setStep('done');
   };
 
-  if (step === 'loading') {
+  if (authLoading || step === 'loading') {
     return (
       <View style={styles.loader}>
         <ActivityIndicator color={colors.primary} size="large" />
       </View>
     );
+  }
+
+  if (!session) {
+    return <AuthScreen />;
   }
 
   if (step === 'welcome') {
@@ -158,3 +179,11 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
 });
+
+export default function Navigation() {
+  return (
+    <AuthProvider>
+      <AppNavigator />
+    </AuthProvider>
+  );
+}

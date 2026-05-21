@@ -6,6 +6,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, radius, shadows } from '../theme';
 import { SleepRecord, addSleepRecord, todayStr } from '../utils/storage';
+import { pushSleepRecord } from '../lib/sync';
 
 interface Props {
   visible: boolean;
@@ -46,6 +47,7 @@ export default function SleepModal({ visible, onClose, onSaved }: Props) {
       duration: durationMins,
     };
     await addSleepRecord(record);
+    pushSleepRecord(record).catch(() => {});
     onSaved(record);
     onClose();
   }

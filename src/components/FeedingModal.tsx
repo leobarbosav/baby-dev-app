@@ -6,6 +6,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, radius, shadows } from '../theme';
 import { FeedingRecord, addFeedingRecord, todayStr } from '../utils/storage';
+import { pushFeedingRecord } from '../lib/sync';
 
 const TYPES = ['Amamentação', 'Mamadeira', 'Papa', 'Sólidos'];
 
@@ -41,6 +42,7 @@ export default function FeedingModal({ visible, onClose, onSaved }: Props) {
       amount: amount.trim() || '—',
     };
     await addFeedingRecord(record);
+    pushFeedingRecord(record).catch(() => {});
     onSaved(record);
     setAmount('');
     onClose();
